@@ -17,7 +17,6 @@ import java.util.Arrays;
 @Slf4j
 public class
 
-
 DataInitialize implements CommandLineRunner {
 
         private final UserAccountRepository userAccountRepository;
@@ -37,11 +36,14 @@ DataInitialize implements CommandLineRunner {
         public void run(String... args) throws Exception {
                 log.info("Ensuring database schema is up-to-date...");
                 try {
-                    // Tự động thêm cột is_preorder vào bảng order_item nếu chưa có (H2 or MySQL syntax)
-                    jdbcTemplate.execute("ALTER TABLE order_item ADD COLUMN IF NOT EXISTS is_preorder BOOLEAN DEFAULT FALSE");
-                    log.info("Database schema check: 'is_preorder' column verified.");
+                        // Tự động thêm cột is_preorder vào bảng order_item nếu chưa có (H2 or MySQL
+                        // syntax)
+                        jdbcTemplate.execute(
+                                        "ALTER TABLE order_item ADD COLUMN IF NOT EXISTS is_preorder BOOLEAN DEFAULT FALSE");
+                        log.info("Database schema check: 'is_preorder' column verified.");
                 } catch (Exception e) {
-                    log.warn("Could not add 'is_preorder' column automatically (it might already exist). Detail: {}", e.getMessage());
+                        log.warn("Could not add 'is_preorder' column automatically (it might already exist). Detail: {}",
+                                        e.getMessage());
                 }
 
                 log.info("Checking data initialization status...");
@@ -107,6 +109,7 @@ DataInitialize implements CommandLineRunner {
                                 .description("Timeless aviator style sunglasses.")
                                 .productType(Product.ProductType.FRAME)
                                 .isPrescriptionSupported(true)
+                                .price(new BigDecimal("150.00"))
                                 .build();
                 productRepository.save(aviator);
 
@@ -143,6 +146,7 @@ DataInitialize implements CommandLineRunner {
                                 .description("Simple and elegant reading glasses.")
                                 .productType(Product.ProductType.FRAME)
                                 .isPrescriptionSupported(true)
+                                .price(new BigDecimal("80.00"))
                                 .build();
                 productRepository.save(readingGlasses);
 
@@ -166,6 +170,7 @@ DataInitialize implements CommandLineRunner {
                                 .description("Microfiber cloth and spray.")
                                 .productType(Product.ProductType.ACCESSORY)
                                 .isPrescriptionSupported(false)
+                                .price(new BigDecimal("25.00"))
                                 .build();
                 productRepository.save(cleaningKit);
 
@@ -180,8 +185,6 @@ DataInitialize implements CommandLineRunner {
                                 .deleted(false)
                                 .build();
                 productVariantRepository.save(kitStandard);
-
-
 
         }
 
@@ -251,7 +254,7 @@ DataInitialize implements CommandLineRunner {
                                 .shippingAddress(address)
                                 .billingAddress(address)
                                 .paymentStatus("PAID")
-                        .orderCode("ORD-1234567890")
+                                .orderCode("ORD-1234567890")
                                 .build();
                 orderRepository.save(o1);
 
@@ -294,7 +297,7 @@ DataInitialize implements CommandLineRunner {
                                 .shippingAddress(address)
                                 .billingAddress(address)
                                 .paymentStatus("PAID")
-                        .orderCode("ORD-98765432101")
+                                .orderCode("ORD-98765432101")
                                 .build();
                 orderRepository.save(o2);
 
@@ -321,7 +324,7 @@ DataInitialize implements CommandLineRunner {
                                 .shippingAddress(address)
                                 .billingAddress(address)
                                 .paymentStatus("PAID")
-                        .orderCode("ORD-12345678903")
+                                .orderCode("ORD-12345678903")
                                 .build();
                 orderRepository.save(o3);
 
