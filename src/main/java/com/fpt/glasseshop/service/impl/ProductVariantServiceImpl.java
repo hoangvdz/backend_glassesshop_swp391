@@ -132,6 +132,22 @@ public class ProductVariantServiceImpl implements ProductVariantService {
         variant.setActive(false);
         productVariantRepo.save(variant);
     }
+
+    @Override
+    public ProductVariantDTO updateQuantityProductVariant(Long variantId, Integer quantity) throws BadRequestException {
+        ProductVariant variant = productVariantRepo.findById(variantId)
+                .orElseThrow(() -> new BadRequestException("Variant not found"));
+
+        if (quantity < 0) {
+            throw new BadRequestException("Quantity must be greater than or equal to 0");
+        }
+
+        variant.setStockQuantity(quantity);
+        ProductVariant savedVariant = productVariantRepo.save(variant);
+
+        return mapToDTO(savedVariant);
+    }
+
     private ProductVariantDTO mapToDTO(ProductVariant variant) {
         return ProductVariantDTO.builder()
                 .variantId(variant.getVariantId())

@@ -24,4 +24,6 @@ public class ReturnRequestResponseDTO {
     private LocalDateTime resolvedAt;
     private String requestType;
     private Long replacementOrderId;
+    private Integer returnQuantity;
+    private Long replacementOrderItemId;
 }
