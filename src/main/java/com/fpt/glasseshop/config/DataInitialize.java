@@ -24,11 +24,7 @@ DataInitialize implements CommandLineRunner {
         private final ProductVariantRepository productVariantRepository;
         private final LensOptionRepository lensOptionRepository;
         private final PromotionRepository promotionRepository;
-        private final OrderRepository orderRepository;
-        private final OrderItemRepository orderItemRepository;
-        private final AddressRepository addressRepository;
-        private final PrescriptionRepository prescriptionRepository;
-        private final PreOrderRepository preOrderRepository;
+
         private final JdbcTemplate jdbcTemplate;
         private final org.springframework.security.crypto.password.PasswordEncoder passwordEncoder;
 
