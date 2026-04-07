@@ -1,6 +1,5 @@
 package com.fpt.glasseshop.entity;
 
-import lombok.AllArgsConstructor;
 public class AuthData {
     private Long userId;
     private boolean status;

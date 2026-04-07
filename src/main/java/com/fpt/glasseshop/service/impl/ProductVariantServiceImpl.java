@@ -76,16 +76,16 @@ public class ProductVariantServiceImpl implements ProductVariantService {
     @Override
     public ProductVariantDTO updateProductVariant(VariantRequest productVariant, Long productVariantId) {
         ProductVariant proVariantExists = getProductVariantById(productVariantId);
-        if(proVariantExists != null){
+        if (proVariantExists != null) {
             proVariantExists.setColor(productVariant.getColor().trim());
             proVariantExists.setFrameSize(productVariant.getFrameSize().trim());
             proVariantExists.setStatus(productVariant.getStatus());
             proVariantExists.setMaterial(productVariant.getMaterial().trim());
             proVariantExists.setStockQuantity(productVariant.getStockQuantity());
             proVariantExists.setImageUrl(productVariant.getImageUrl());
-        }
-        if (productVariant.getActive() != null) {
-            proVariantExists.setActive(productVariant.getActive());
+            if (productVariant.getActive() != null) {
+                proVariantExists.setActive(productVariant.getActive());
+            }
         }
         ProductVariant saved = productVariantRepo.save(proVariantExists);
         return mapToDTO(saved);

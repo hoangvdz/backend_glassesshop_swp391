@@ -1,8 +1,5 @@
 package com.fpt.glasseshop.entity;
 
-import lombok.AllArgsConstructor;
-import lombok.NoArgsConstructor;
-
 
 public class StockResponse {
     private Long variantId;

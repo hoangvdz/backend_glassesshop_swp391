@@ -3,7 +3,6 @@ package com.fpt.glasseshop.service;
 import com.fpt.glasseshop.entity.*;
 import com.fpt.glasseshop.entity.dto.*;
 import com.fpt.glasseshop.exception.ResourceNotFoundException;
-import com.fpt.glasseshop.repository.AddressRepository;
 import com.fpt.glasseshop.repository.CartRepository;
 import com.fpt.glasseshop.repository.OrderRepository;
 
@@ -14,7 +13,6 @@ import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
@@ -27,7 +25,6 @@ public class OrderService {
     private final OrderRepository orderRepository;
     private final OrderItemService orderItemService;
     private final CartRepository cartRepository;
-    private final AddressRepository addressRepository;
     private final CartService cartService;
     private final com.fpt.glasseshop.repository.ProductVariantRepository productVariantRepository;
 
@@ -281,17 +278,6 @@ public class OrderService {
                         .map(this::mapToItemDTO)
                         .collect(Collectors.toList()) : null)
                 .totalItems(order.getOrderItems() != null ? order.getOrderItems().size() : 0)
-                .build();
-    }
-
-    private AddressDTO mapToAddressDTO(com.fpt.glasseshop.entity.Address address) {
-        if (address == null)
-            return null;
-        return AddressDTO.builder()
-                .addressId(address.getAddressId())
-                .street(address.getStreet())
-                .city(address.getCity())
-                .country(address.getCountry())
                 .build();
     }
 
