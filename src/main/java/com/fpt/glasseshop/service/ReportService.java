@@ -4,7 +4,6 @@ import com.fpt.glasseshop.entity.dto.response.RevenueResponse;
 import org.apache.coyote.BadRequestException;
 
 import java.time.LocalDate;
-import java.time.LocalDateTime;
 
 public interface ReportService {
     RevenueResponse getRevenueBetween(LocalDate fromDate, LocalDate toDate) throws BadRequestException;

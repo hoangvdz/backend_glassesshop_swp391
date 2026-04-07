@@ -1,19 +1,14 @@
 package com.fpt.glasseshop.controller;
 
-import com.fpt.glasseshop.entity.Order;
 import com.fpt.glasseshop.entity.ReturnRequest;
-import com.fpt.glasseshop.entity.UserAccount;
 import com.fpt.glasseshop.entity.dto.ApiResponse;
 import com.fpt.glasseshop.entity.dto.ReturnRequestDTO;
 import com.fpt.glasseshop.entity.dto.ReturnRequestResponseDTO;
 import com.fpt.glasseshop.entity.dto.UpdateReturnStatusDTO;
-import com.fpt.glasseshop.repository.UserAccountRepository;
 import com.fpt.glasseshop.service.ReturnRequestService;
 import lombok.RequiredArgsConstructor;
 import org.apache.coyote.BadRequestException;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.access.AccessDeniedException;
-import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.*;
 

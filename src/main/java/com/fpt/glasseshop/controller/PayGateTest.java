@@ -3,7 +3,6 @@ package com.fpt.glasseshop.controller;
 import com.fpt.glasseshop.config.utils;
 import org.springframework.stereotype.Controller;
 
-import javax.management.Query;
 import java.io.UnsupportedEncodingException;
 import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
@@ -25,7 +24,7 @@ public class PayGateTest {
 
     String returnUrl = "http://localhost:8080/api/v1/payment/vnpay/return";
 
-    Map vnp_Params = new HashMap();
+    Map<String, String> vnp_Params = new HashMap<>();
 
     String vnp_Url = "https://sandbox.vnpayment.vn/paymentv2/vpcpay.html";
 
@@ -39,8 +38,8 @@ public class PayGateTest {
         vnp_Params.put("vnp_TmnCode", vnp_TmnCode);
         vnp_Params.put("vnp_Amount", vnp_amount);
         vnp_Params.put("vnp_ReturnUrl", returnUrl);
-        String bank_code = null;
-        if (bank_code != null && !bank_code.isEmpty()) {
+        String bank_code = "";
+        if (!bank_code.isEmpty()) {
             vnp_Params.put("vnp_BankCode", bank_code);
         }
         vnp_Params.put("vnp_TxnRef", vnp_TxnRef);
@@ -58,11 +57,11 @@ public class PayGateTest {
         cld.add(Calendar.MINUTE, 15);
         String vnp_ExpireDate = formatter.format(cld.getTime());
         vnp_Params.put("vnp_ExpireDate", vnp_ExpireDate);
-        List fieldNames = new ArrayList(vnp_Params.keySet());
+        List<String> fieldNames = new ArrayList<>(vnp_Params.keySet());
         Collections.sort(fieldNames);
         StringBuilder hashData = new StringBuilder();
         StringBuilder query = new StringBuilder();
-        Iterator itr = fieldNames.iterator();
+        Iterator<String> itr = fieldNames.iterator();
         while (itr.hasNext()) {
             String fieldName = (String) itr.next();
             String fieldValue = (String) vnp_Params.get(fieldName);
