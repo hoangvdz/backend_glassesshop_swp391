@@ -186,6 +186,7 @@ public class OrderService {
             BigDecimal subtotal = unitPrice.multiply(BigDecimal.valueOf(cartItem.getQuantity()));
             totalPrice = totalPrice.add(subtotal);
 
+            // Merged Logic: Loop from 'dev' + Prescription fields from 'NVK'
             for (int i = 0; i < cartItem.getQuantity(); i++) {
 
                 OrderItem orderItem = OrderItem.builder()
@@ -206,7 +207,7 @@ public class OrderService {
                         .lensType(cartItem.getLensOption() != null ? cartItem.getLensOption().getType() : null)
                         .lensPrice(lensPrice)
                         .lensCoating(cartItem.getLensOption() != null ? cartItem.getLensOption().getCoating() : null)
-                        .quantity(1) //  QUAN TRỌNG
+                        .quantity(1) // QUAN TRỌNG
                         .unitPrice(unitPrice)
                         .isPreorder(isPreorderItem)
                         .fulfillmentType(cartItem.getPrescription() != null || cartItem.getIsLens() == Boolean.TRUE
@@ -234,6 +235,8 @@ public class OrderService {
                             .cylRight(cartP.getCylRight())
                             .axisLeft(cartP.getAxisLeft())
                             .axisRight(cartP.getAxisRight())
+                            .addLeft(cartP.getAddLeft())
+                            .addRight(cartP.getAddRight())
                             .pd(cartP.getPd())
                             .doctorName(cartP.getDoctorName())
                             .expirationDate(cartP.getExpirationDate())
@@ -258,7 +261,6 @@ public class OrderService {
         return convertToDTO(savedOrder);
     }
 
-    // Removed redundant createOrder method.
     public List<OrderItem> getOrderItems(Long orderId) {
         return orderItemService.getOrderItemsByOrderId(orderId);
     }
@@ -336,6 +338,8 @@ public class OrderService {
                 .cylRight(p.getCylRight())
                 .axisLeft(p.getAxisLeft())
                 .axisRight(p.getAxisRight())
+                .addLeft(p.getAddLeft())
+                .addRight(p.getAddRight())
                 .pd(p.getPd())
                 .doctorName(p.getDoctorName())
                 .expirationDate(p.getExpirationDate())
@@ -352,6 +356,5 @@ public class OrderService {
     public long getTotalOrdersPaid() {
         return orderRepository.count();
     }
-
 
 }
