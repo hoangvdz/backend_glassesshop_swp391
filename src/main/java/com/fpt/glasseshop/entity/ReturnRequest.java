@@ -55,6 +55,12 @@ public class ReturnRequest {
     @Column(name = "replacement_order_id")
     private Long replacementOrderId;
 
+    @Column(name = "replacement_order_item_id")
+    private Long replacementOrderItemId;
+
+    @Column(nullable = false)
+    private Integer returnQuantity;
+
     public enum RequestType {
         RETURN, EXCHANGE
     }

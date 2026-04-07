@@ -60,22 +60,11 @@ public class ReturnRequestController {
     }
 
     @GetMapping("/order-item/{orderItemId}")
-    public ResponseEntity<ApiResponse<ReturnRequestResponseDTO>> getByOrderItemId(
+    public ResponseEntity<ApiResponse<List<ReturnRequestResponseDTO>>> getByOrderItemId(
             @PathVariable Long orderItemId) {
 
-        ReturnRequestResponseDTO dto = returnRequestService.getByOrderItemId(orderItemId);
+        List<ReturnRequestResponseDTO> dto = returnRequestService.getByOrderItemId(orderItemId);
         return ResponseEntity.ok(ApiResponse.success("Return request fetched successfully", dto));
-    }
-    @PatchMapping("/{requestId}/approve")
-    public ResponseEntity<ApiResponse<ReturnRequestResponseDTO>> approveRequest(
-            @PathVariable Long requestId
-    ) {
-        ReturnRequest approvedRequest = returnRequestService.approveRequest(requestId);
-        ReturnRequestResponseDTO data = returnRequestService.mapToDTO(approvedRequest);
-
-        return ResponseEntity.ok(
-                ApiResponse.success("Request approved successfully", data)
-        );
     }
 
 }

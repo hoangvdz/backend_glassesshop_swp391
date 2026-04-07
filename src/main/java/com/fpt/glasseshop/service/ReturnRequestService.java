@@ -47,7 +47,7 @@ public class ReturnRequestService {
         OrderItem orderItem = orderItemRepository.findById(dto.getOrderItemId())
                 .orElseThrow(() -> new RuntimeException("Order not found"));
         Order order = orderItem.getOrder();
-        order.setPaymentStatus("PAID");
+
         // 1. check owner
         if (order.getUser() == null || !order.getUser().getUserId().equals(currentUser.getUserId())) {
             throw new BadRequestException("You are not allowed to return this order item");
@@ -58,14 +58,24 @@ public class ReturnRequestService {
             throw new BadRequestException("Only delivered orders can be returned");
         }
 
-        // 3. đơn đã thanh toán mới được đổi/trả
-        if (!"PAID".equalsIgnoreCase(order.getPaymentStatus())) {
-            throw new BadRequestException("Only paid orders can be returned");
+        // 4. validate return quantity
+        if (dto.getReturnQuantity() == null || dto.getReturnQuantity() <= 0) {
+            throw new BadRequestException("Return quantity must be greater than 0");
         }
 
-        // 4. check trùng theo orderItem
-        if (returnRequestRepo.existsByOrderItemOrderItemId(orderItem.getOrderItemId())) {
-            throw new BadRequestException("Return request already exists for this order item");
+        if (dto.getReturnQuantity() > orderItem.getQuantity()) {
+            throw new BadRequestException("Return quantity cannot exceed purchased quantity");
+        }
+
+        Integer requestedQty = returnRequestRepo.sumRequestedQuantityByOrderItemId(orderItem.getOrderItemId(),ReturnRequest.ReturnStatus.REJECTED);
+        int remainingQty = orderItem.getQuantity() - (requestedQty != null ? requestedQty : 0);
+
+        if (remainingQty <= 0) {
+            throw new BadRequestException("All quantities of this item have already been requested for return/exchange");
+        }
+
+        if (dto.getReturnQuantity() > remainingQty) {
+            throw new BadRequestException("Only " + remainingQty + " item(s) remaining for return/exchange");
         }
 
         // 5. check time 7 day
@@ -81,6 +91,7 @@ public class ReturnRequestService {
 
         ReturnRequest request = ReturnRequest.builder()
                 .orderItem(orderItem)
+                .returnQuantity(dto.getReturnQuantity())
                 .reason(dto.getReason())
                 .description(dto.getDescription())
                 .imageUrl(dto.getImageUrl())
@@ -102,57 +113,6 @@ public class ReturnRequestService {
                 .stream()
                 .map(this::mapToDTO)
                 .toList();
-    }
-
-    @Transactional
-    public ReturnRequestResponseDTO updateStatus(Long id, UpdateReturnStatusDTO dto) {
-        ReturnRequest request = returnRequestRepo.findById(id)
-                .orElseThrow(() -> new RuntimeException("Return request not found"));
-
-        ReturnRequest.ReturnStatus currentStatus = request.getStatus();
-        ReturnRequest.ReturnStatus newStatus = dto.getStatus();
-
-        if (newStatus == null) {
-            throw new IllegalArgumentException("Status must not be null");
-        }
-
-        if (currentStatus == newStatus) {
-            throw new IllegalArgumentException("Return request is already in status: " + newStatus);
-        }
-
-        if (!isValidTransition(currentStatus, newStatus)) {
-            throw new IllegalArgumentException(
-                    "Cannot change return request status from " + currentStatus + " to " + newStatus
-            );
-        }
-
-        validateRolePermission(currentStatus, newStatus);
-        //check flow
-        if (newStatus == ReturnRequest.ReturnStatus.REJECTED) {
-            if (dto.getRejectionReason() == null || dto.getRejectionReason().trim().isEmpty()) {
-                throw new IllegalArgumentException("Rejection reason is required");
-            }
-            request.setRejectionReason(dto.getRejectionReason().trim());
-        } else {
-            request.setRejectionReason(null);
-        }
-
-        request.setStatus(newStatus);
-        if (newStatus == ReturnRequest.ReturnStatus.APPROVED
-                && request.getRequestType() == ReturnRequest.RequestType.EXCHANGE) {
-
-            Long newOrderId = createReplacementOrderForExchange(request);
-            request.setReplacementOrderId(newOrderId);
-        }
-        //check role
-        if (newStatus == ReturnRequest.ReturnStatus.APPROVED
-                || newStatus == ReturnRequest.ReturnStatus.REJECTED
-                || newStatus == ReturnRequest.ReturnStatus.COMPLETED) {
-            request.setResolvedAt(LocalDateTime.now());
-        }
-
-        ReturnRequest saved = returnRequestRepo.save(request);
-        return mapToDTO(saved);
     }
 
     private boolean isValidTransition(ReturnRequest.ReturnStatus currentStatus,
@@ -208,11 +168,11 @@ public class ReturnRequestService {
                 .anyMatch(a -> role.equals(a.getAuthority()));
     }
 
-    public ReturnRequestResponseDTO getByOrderItemId(Long orderItemId) {
-        ReturnRequest request = returnRequestRepo.findByOrderItemOrderItemId(orderItemId)
-                .orElseThrow(() -> new RuntimeException("Return request not found"));
-
-        return mapToDTO(request);
+    public List<ReturnRequestResponseDTO> getByOrderItemId(Long orderItemId) {
+        return returnRequestRepo.findAllByOrderItemOrderItemId(orderItemId)
+                .stream()
+                .map(this::mapToDTO)
+                .toList();
     }
 
     @Transactional
@@ -226,8 +186,7 @@ public class ReturnRequestService {
         request.setResolvedAt(LocalDateTime.now());
 
         if (request.getRequestType() == ReturnRequest.RequestType.EXCHANGE) {
-            Long newOrderId = createReplacementOrderForExchange(request);
-            request.setReplacementOrderId(newOrderId);
+            createReplacementOrderForExchange(request);
         }
 
         return returnRequestRepo.save(request);
@@ -275,6 +234,7 @@ public class ReturnRequestService {
                                 : null
                 )
                 .orderItemId(request.getOrderItem() != null ? request.getOrderItem().getOrderItemId() : null)
+                .returnQuantity(request.getReturnQuantity())
                 .reason(request.getReason())
                 .description(request.getDescription())
                 .imageUrl(request.getImageUrl())
@@ -293,12 +253,17 @@ public class ReturnRequestService {
         }
     }
 
-    private Long createReplacementOrderForExchange(ReturnRequest request) {
+    private void createReplacementOrderForExchange(ReturnRequest request) {
         OrderItem oldItem = getRequiredOrderItem(request);
-        Order newOrder = createReplacementOrder(oldItem);
-        OrderItem savedNewItem = orderItemRepository.save(cloneOrderItem(oldItem, newOrder));
+        Integer exchangeQty = request.getReturnQuantity();
+
+        Order newOrder = createReplacementOrder(oldItem, exchangeQty);
+        OrderItem savedNewItem = orderItemRepository.save(cloneOrderItem(oldItem, newOrder, exchangeQty));
+
         clonePrescriptionIfNeeded(oldItem, savedNewItem);
-        return newOrder.getOrderId();
+
+        request.setReplacementOrderId(newOrder.getOrderId());
+        request.setReplacementOrderItemId(savedNewItem.getOrderItemId());
     }
 
     private OrderItem getRequiredOrderItem(ReturnRequest request) {
@@ -312,17 +277,17 @@ public class ReturnRequestService {
         return orderItem;
     }
 
-    private Order createReplacementOrder(OrderItem oldItem) {
+    private Order createReplacementOrder(OrderItem oldItem, Integer quantity) {
         Order oldOrder = oldItem.getOrder();
 
         BigDecimal totalPrice = oldItem.getUnitPrice()
-                .multiply(BigDecimal.valueOf(oldItem.getQuantity()));
+                .multiply(BigDecimal.valueOf(quantity));
 
         return orderRepository.save(
                 Order.builder()
                         .user(oldOrder.getUser())
                         .status("PENDING")
-                        .paymentStatus("UNPAID")
+                        .paymentStatus("PAID")
                         .paymentMethod("EXCHANGE")
                         .shippingAddress(oldOrder.getShippingAddress())
                         .billingAddress(oldOrder.getBillingAddress())
@@ -331,12 +296,12 @@ public class ReturnRequestService {
         );
     }
 
-    private OrderItem cloneOrderItem(OrderItem oldItem, Order newOrder) {
+    private OrderItem cloneOrderItem(OrderItem oldItem, Order newOrder, Integer quantity) {
         return OrderItem.builder()
                 .order(newOrder)
                 .variant(oldItem.getVariant())
                 .lensOption(oldItem.getLensOption())
-                .quantity(oldItem.getQuantity())
+                .quantity(quantity)
                 .unitPrice(oldItem.getUnitPrice())
                 .fulfillmentType(oldItem.getFulfillmentType())
 

@@ -100,4 +100,17 @@ public class ProductVariantController {
         return ResponseEntity.ok(ApiResponse.success("Product Variant deleted successfully", null));
     }
 
+    @PutMapping("/variants/updateQuantity/{variantId}")
+    public ResponseEntity<ApiResponse<ProductVariantDTO>> updateVariantQuantity(
+            @PathVariable Long variantId,
+            @RequestParam Integer quantity
+    ) throws BadRequestException {
+        ProductVariantDTO updatedVariant =
+                productVariantService.updateQuantityProductVariant(variantId, quantity);
+
+        return ResponseEntity.ok(
+                ApiResponse.success("Product Variant quantity updated successfully", updatedVariant)
+        );
+    }
+
 }

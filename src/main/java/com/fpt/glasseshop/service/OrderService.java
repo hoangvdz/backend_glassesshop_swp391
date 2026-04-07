@@ -186,56 +186,64 @@ public class OrderService {
             BigDecimal subtotal = unitPrice.multiply(BigDecimal.valueOf(cartItem.getQuantity()));
             totalPrice = totalPrice.add(subtotal);
 
-            OrderItem orderItem = OrderItem.builder()
-                    .order(order)
-                    .variant(cartItem.getVariant())
-                    .variantId(cartItem.getVariant() != null ? cartItem.getVariant().getVariantId() : null)
-                    .productId(cartItem.getVariant() != null && cartItem.getVariant().getProduct() != null ? cartItem.getVariant().getProduct().getProductId() : (cartItem.getProductId() != null ? cartItem.getProductId() : null))
-                    .productName(cartItem.getVariant() != null && cartItem.getVariant().getProduct() != null ? cartItem.getVariant().getProduct().getName() : (cartItem.getProductName() != null ? cartItem.getProductName() : null))
-                    .variantColor(cartItem.getVariant() != null ? cartItem.getVariant().getColor() : null)
-                    .variantSize(cartItem.getVariant() != null ? cartItem.getVariant().getFrameSize() : null)
-                    .imageUrl(cartItem.getVariant() != null ? cartItem.getVariant().getImageUrl() : null)
-                    .lensOption(cartItem.getLensOption())
-                    .lensOptionId(cartItem.getLensOption() != null ? cartItem.getLensOption().getLensOptionId() : null)
-                    .lensType(cartItem.getLensOption() != null ? cartItem.getLensOption().getType() : null)
-                    .lensPrice(lensPrice)
-                    .lensCoating(cartItem.getLensOption() != null ? cartItem.getLensOption().getCoating() : null)
-                    .quantity(cartItem.getQuantity())
-                    .unitPrice(unitPrice)
-                    .isPreorder(isPreorderItem)
-                    .fulfillmentType(cartItem.getPrescription() != null || cartItem.getIsLens() == Boolean.TRUE ? "PRESCRIPTION" : (isPreorderItem ? "PRE_ORDER" : "IN_STOCK"))
-                    // Copy manual entry prescription values if they exist in CartItem's linked prescription
-                    .sphLeft(cartItem.getPrescription() != null ? cartItem.getPrescription().getSphLeft() : null)
-                    .sphRight(cartItem.getPrescription() != null ? cartItem.getPrescription().getSphRight() : null)
-                    .cylLeft(cartItem.getPrescription() != null ? cartItem.getPrescription().getCylLeft() : null)
-                    .cylRight(cartItem.getPrescription() != null ? cartItem.getPrescription().getCylRight() : null)
-                    .axisLeft(cartItem.getPrescription() != null ? cartItem.getPrescription().getAxisLeft() : null)
-                    .axisRight(cartItem.getPrescription() != null ? cartItem.getPrescription().getAxisRight() : null)
-                    .addLeft(cartItem.getPrescription() != null ? cartItem.getPrescription().getAddLeft() : null)
-                    .addRight(cartItem.getPrescription() != null ? cartItem.getPrescription().getAddRight() : null)
-                    .pd(cartItem.getPrescription() != null ? cartItem.getPrescription().getPd() : null)
-                    .build();
+            for (int i = 0; i < cartItem.getQuantity(); i++) {
 
-            if (cartItem.getPrescription() != null) {
-                Prescription cartP = cartItem.getPrescription();
-                Prescription p = Prescription.builder()
-                        .orderItem(orderItem)
-                        .cartItem(null)
-                        .sphLeft(cartP.getSphLeft())
-                        .sphRight(cartP.getSphRight())
-                        .cylLeft(cartP.getCylLeft())
-                        .cylRight(cartP.getCylRight())
-                        .axisLeft(cartP.getAxisLeft())
-                        .axisRight(cartP.getAxisRight())
-                        .pd(cartP.getPd())
-                        .doctorName(cartP.getDoctorName())
-                        .expirationDate(cartP.getExpirationDate())
-                        .status(cartP.getStatus() != null ? cartP.getStatus() : false)
+                OrderItem orderItem = OrderItem.builder()
+                        .order(order)
+                        .variant(cartItem.getVariant())
+                        .variantId(cartItem.getVariant() != null ? cartItem.getVariant().getVariantId() : null)
+                        .productId(cartItem.getVariant() != null && cartItem.getVariant().getProduct() != null
+                                ? cartItem.getVariant().getProduct().getProductId()
+                                : (cartItem.getProductId() != null ? cartItem.getProductId() : null))
+                        .productName(cartItem.getVariant() != null && cartItem.getVariant().getProduct() != null
+                                ? cartItem.getVariant().getProduct().getName()
+                                : (cartItem.getProductName() != null ? cartItem.getProductName() : null))
+                        .variantColor(cartItem.getVariant() != null ? cartItem.getVariant().getColor() : null)
+                        .variantSize(cartItem.getVariant() != null ? cartItem.getVariant().getFrameSize() : null)
+                        .imageUrl(cartItem.getVariant() != null ? cartItem.getVariant().getImageUrl() : null)
+                        .lensOption(cartItem.getLensOption())
+                        .lensOptionId(cartItem.getLensOption() != null ? cartItem.getLensOption().getLensOptionId() : null)
+                        .lensType(cartItem.getLensOption() != null ? cartItem.getLensOption().getType() : null)
+                        .lensPrice(lensPrice)
+                        .lensCoating(cartItem.getLensOption() != null ? cartItem.getLensOption().getCoating() : null)
+                        .quantity(1) //  QUAN TRỌNG
+                        .unitPrice(unitPrice)
+                        .isPreorder(isPreorderItem)
+                        .fulfillmentType(cartItem.getPrescription() != null || cartItem.getIsLens() == Boolean.TRUE
+                                ? "PRESCRIPTION"
+                                : (isPreorderItem ? "PRE_ORDER" : "IN_STOCK"))
+                        .sphLeft(cartItem.getPrescription() != null ? cartItem.getPrescription().getSphLeft() : null)
+                        .sphRight(cartItem.getPrescription() != null ? cartItem.getPrescription().getSphRight() : null)
+                        .cylLeft(cartItem.getPrescription() != null ? cartItem.getPrescription().getCylLeft() : null)
+                        .cylRight(cartItem.getPrescription() != null ? cartItem.getPrescription().getCylRight() : null)
+                        .axisLeft(cartItem.getPrescription() != null ? cartItem.getPrescription().getAxisLeft() : null)
+                        .axisRight(cartItem.getPrescription() != null ? cartItem.getPrescription().getAxisRight() : null)
+                        .addLeft(cartItem.getPrescription() != null ? cartItem.getPrescription().getAddLeft() : null)
+                        .addRight(cartItem.getPrescription() != null ? cartItem.getPrescription().getAddRight() : null)
+                        .pd(cartItem.getPrescription() != null ? cartItem.getPrescription().getPd() : null)
                         .build();
-                orderItem.setPrescription(p);
-            }
 
-            order.getOrderItems().add(orderItem);
+                if (cartItem.getPrescription() != null) {
+                    Prescription cartP = cartItem.getPrescription();
+                    Prescription p = Prescription.builder()
+                            .orderItem(orderItem)
+                            .cartItem(null)
+                            .sphLeft(cartP.getSphLeft())
+                            .sphRight(cartP.getSphRight())
+                            .cylLeft(cartP.getCylLeft())
+                            .cylRight(cartP.getCylRight())
+                            .axisLeft(cartP.getAxisLeft())
+                            .axisRight(cartP.getAxisRight())
+                            .pd(cartP.getPd())
+                            .doctorName(cartP.getDoctorName())
+                            .expirationDate(cartP.getExpirationDate())
+                            .status(cartP.getStatus() != null ? cartP.getStatus() : false)
+                            .build();
+                    orderItem.setPrescription(p);
+                }
+
+                order.getOrderItems().add(orderItem);
+            }
         }
 
         order.setTotalPrice(totalPrice);
