@@ -16,4 +16,5 @@ public class ReturnRequestDTO {
     private String description;
     private String imageUrl;
     private String requestType;
+    private Integer returnQuantity;
 }
