@@ -74,4 +74,13 @@ public interface OrderRepository extends JpaRepository<Order, Long> {
     long countCustomersPaid();
 
     long countByPaymentStatus(String paymentStatus);
+
+    @Query("""
+        SELECT o FROM Order o 
+        WHERE o.depositType = 'PARTIAL' 
+        AND o.paymentStatus != 'PAID' 
+        AND o.stockReadyAt <= :cutoff
+        AND o.status NOT IN ('CANCELLED', 'CANCELED')
+    """)
+    List<Order> findTimeoutPreOrders(@Param("cutoff") LocalDateTime cutoff);
 }

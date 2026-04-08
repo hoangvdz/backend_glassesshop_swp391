@@ -56,7 +56,22 @@ public class OrderService {
     }
 
     public Optional<Order> getOrderById(Long orderId) {
-        return orderRepository.findById(orderId);
+        Optional<Order> orderOpt = orderRepository.findById(orderId);
+        if (orderOpt.isPresent()) {
+            Order order = orderOpt.get();
+            // Check for 12h timeout for preorder balance payment
+            if ("PARTIAL".equals(order.getDepositType()) && 
+                "PROCESSING".equals(order.getStatus()) && 
+                order.getStockReadyAt() != null && 
+                order.getStockReadyAt().plusHours(12).isBefore(LocalDateTime.now()) &&
+                "UNPAID".equals(order.getPaymentStatus()) &&
+                !"COD".equals(order.getPaymentMethod())) {
+                
+                order.setPaymentMethod("COD");
+                orderRepository.save(order);
+            }
+        }
+        return orderOpt;
     }
 
     public Optional<OrderDTO> getOrderDTOById(Long orderId) {
@@ -67,22 +82,40 @@ public class OrderService {
     public OrderDTO updateOrderStatus(Long orderId, String newStatus) {
         Order order = orderRepository.findById(orderId)
                 .orElseThrow(() -> new ResourceNotFoundException("Order not found with id: " + orderId));
-        java.util.List<String> validStatuses = java.util.Arrays.asList("PENDING", "PROCESSING", "DELIVERING", "DELIVERED", "CANCELED");
-        if (!validStatuses.contains(newStatus)) {
-            throw new IllegalArgumentException("Invalid order status: " + newStatus);
+        java.util.List<String> validStatuses = java.util.Arrays.asList(
+            "PENDING", "PROCESSING", "DELIVERING", "DELIVERED", "CANCELED", 
+            "CANCELLED", "SHIPPED", "PREORDER", "COMPLETED"
+        );
+        String targetStatus = newStatus.toUpperCase();
+        if (!validStatuses.contains(targetStatus)) {
+            throw new IllegalArgumentException("Invalid order status: " + targetStatus);
         }
 
-        order.setStatus(newStatus);
+        // Force StockReadyAt if moving from PENDING to something else (approving pre-order)
+        if ("PENDING".equals(order.getStatus()) && ("PROCESSING".equals(targetStatus) || "PREORDER".equals(targetStatus))) {
+            order.setStockReadyAt(LocalDateTime.now());
+        }
+
+        // Logic for Pre-order: cannot move to SHIPPED/DELIVERING if balance not paid (unless COD)
+        if ("PROCESSING".equals(order.getStatus()) && ("SHIPPED".equals(targetStatus) || "DELIVERING".equals(targetStatus))) {
+            if ("PARTIAL".equals(order.getDepositType()) && 
+                "UNPAID".equals(order.getPaymentStatus()) && 
+                !"COD".equals(order.getPaymentMethod())) {
+                throw new IllegalStateException("Cannot ship pre-order: balance payment is required or must be COD.");
+            }
+        }
+
+        order.setStatus(targetStatus);
 
         // Check if canceled to restore stock
-        if ("CANCELED".equals(newStatus)) {
+        if ("CANCELED".equals(targetStatus) || "CANCELLED".equals(targetStatus)) {
             for (OrderItem item : order.getOrderItems()) {
                 if (item.getVariantId() != null && item.getQuantity() != null) {
                     productVariantRepository.decreaseStock(item.getVariantId(), -item.getQuantity()); // negative decrease = increase
                 }
             }
         }
-        if ("DELIVERED".equals(newStatus) && order.getDeliveredAt() == null) {
+        if (("DELIVERED".equals(targetStatus) || "COMPLETED".equals(targetStatus)) && order.getDeliveredAt() == null) {
             order.setDeliveredAt(LocalDateTime.now());
         }
 
@@ -109,6 +142,14 @@ public class OrderService {
             }
         }
 
+        return convertToDTO(orderRepository.save(order));
+    }
+
+    @Transactional
+    public OrderDTO updatePaymentMethod(Long orderId, String newMethod) {
+        Order order = orderRepository.findById(orderId)
+                .orElseThrow(() -> new ResourceNotFoundException("Order not found with id: " + orderId));
+        order.setPaymentMethod(newMethod);
         return convertToDTO(orderRepository.save(order));
     }
 
@@ -158,6 +199,8 @@ public class OrderService {
                 .idempotencyKey(request.getIdempotencyKey())
                 .status("PENDING")
                 .paymentStatus("UNPAID")
+                .depositType(request.getDepositType())
+                .status(request.getShipmentStatus() != null ? request.getShipmentStatus() : "PENDING")
                 .orderDate(LocalDateTime.now())
                 .orderItems(new ArrayList<>())
                 .build();
@@ -250,13 +293,33 @@ public class OrderService {
         }
 
         order.setTotalPrice(totalPrice);
-        order.setFinalPrice(totalPrice.add(shippingFee).subtract(voucherDiscount));
+        BigDecimal finalTotal = totalPrice.add(shippingFee).subtract(voucherDiscount);
+        order.setFinalPrice(finalTotal);
+
+        // ✅ CALC DEPOSIT
+        if (Boolean.TRUE.equals(request.getIsPreorder()) && "PARTIAL".equals(request.getDepositType())) {
+            BigDecimal inStockPart = BigDecimal.ZERO;
+            BigDecimal preOrderPart = BigDecimal.ZERO;
+            
+            for (OrderItem item : order.getOrderItems()) {
+                BigDecimal itemSubtotal = item.getUnitPrice().multiply(BigDecimal.valueOf(item.getQuantity()));
+                if (Boolean.TRUE.equals(item.getIsPreorder())) {
+                    preOrderPart = preOrderPart.add(itemSubtotal);
+                } else {
+                    inStockPart = inStockPart.add(itemSubtotal);
+                }
+            }
+            // Partial: In-stock(100%) + Preorder(50%) + Shipping(100%)
+            order.setDepositAmount(inStockPart.add(preOrderPart.divide(BigDecimal.valueOf(2))).add(shippingFee));
+        } else {
+            order.setDepositAmount(finalTotal);
+        }
 
         // 5. Save Order
         Order savedOrder = orderRepository.save(order);
 
-        // 6. Clear Cart
-        cartService.clearCart(user);
+        // 6. Clear Cart (DEFERRED: only clear on SUCCESSFUL payment/COD)
+        // cartService.clearCart(user);
 
         return convertToDTO(savedOrder);
     }
@@ -284,6 +347,9 @@ public class OrderService {
                 .finalPrice(order.getFinalPrice())
                 .paymentStatus(order.getPaymentStatus())
                 .paymentMethod(order.getPaymentMethod())
+                .depositAmount(order.getDepositAmount())
+                .depositType(order.getDepositType())
+                .stockReadyAt(order.getStockReadyAt())
                 .orderItems(order.getOrderItems() != null ? order.getOrderItems().stream()
                         .map(this::mapToItemDTO)
                         .collect(Collectors.toList()) : null)
