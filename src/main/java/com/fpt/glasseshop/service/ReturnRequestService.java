@@ -3,12 +3,12 @@ package com.fpt.glasseshop.service;
 import com.fpt.glasseshop.entity.*;
 import com.fpt.glasseshop.entity.dto.ReturnRequestDTO;
 import com.fpt.glasseshop.entity.dto.ReturnRequestResponseDTO;
-import com.fpt.glasseshop.entity.dto.UpdateReturnStatusDTO;
+
 import com.fpt.glasseshop.repository.*;
 import lombok.RequiredArgsConstructor;
 import org.apache.coyote.BadRequestException;
 import org.springframework.security.access.AccessDeniedException;
-import org.springframework.security.core.Authentication;
+
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -115,58 +115,7 @@ public class ReturnRequestService {
                 .toList();
     }
 
-    private boolean isValidTransition(ReturnRequest.ReturnStatus currentStatus,
-                                      ReturnRequest.ReturnStatus newStatus) {
-        return switch (currentStatus) {
-            case PENDING ->
-                    newStatus == ReturnRequest.ReturnStatus.APPROVED
-                            || newStatus == ReturnRequest.ReturnStatus.REJECTED;
 
-            case APPROVED ->
-                    newStatus == ReturnRequest.ReturnStatus.COMPLETED;
-
-            case REJECTED, COMPLETED -> false;
-        };
-    }
-
-    private void validateRolePermission(ReturnRequest.ReturnStatus currentStatus,
-                                        ReturnRequest.ReturnStatus newStatus) {
-
-        boolean isStaff = hasRole("ROLE_OPERATIONAL_STAFF");
-        boolean isAdmin = hasRole("ROLE_ADMIN");
-
-        if (!isStaff && !isAdmin) {
-            throw new AccessDeniedException("You do not have permission to update return request status");
-        }
-
-
-        // admin và staff
-        if (currentStatus == ReturnRequest.ReturnStatus.PENDING &&
-                (newStatus == ReturnRequest.ReturnStatus.APPROVED
-                        || newStatus == ReturnRequest.ReturnStatus.REJECTED)) {
-            return;
-        }
-
-        // cả 2 đều complete
-        if (currentStatus == ReturnRequest.ReturnStatus.APPROVED &&
-                newStatus == ReturnRequest.ReturnStatus.COMPLETED) {
-            return;
-        }
-
-        throw new AccessDeniedException("You do not have permission to update return request status");
-    }
-
-    private boolean hasRole(String role) {
-        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
-
-        if (auth == null || auth.getAuthorities() == null) {
-            throw new AccessDeniedException("User is not authenticated");
-        }
-
-        return auth.getAuthorities()
-                .stream()
-                .anyMatch(a -> role.equals(a.getAuthority()));
-    }
 
     public List<ReturnRequestResponseDTO> getByOrderItemId(Long orderItemId) {
         return returnRequestRepo.findAllByOrderItemOrderItemId(orderItemId)
