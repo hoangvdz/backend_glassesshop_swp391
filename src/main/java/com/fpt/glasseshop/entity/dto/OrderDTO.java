@@ -49,6 +49,7 @@ public class OrderDTO {
     private BigDecimal finalPrice;
     private BigDecimal depositAmount;
     private String depositType;
+    private String depositPaymentMethod;
     private LocalDateTime stockReadyAt;
 
     @Schema(description = "Payment status of the order", example = "PAID")

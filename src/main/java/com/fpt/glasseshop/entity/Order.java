@@ -63,6 +63,7 @@ public class Order {
 
     private BigDecimal depositAmount;
     private String depositType; // FULL or PARTIAL
+    private String depositPaymentMethod; // Method used for the initial deposit
     private LocalDateTime stockReadyAt; // Timestamp when stock became available (preorders)
 
     @Column(unique = true)

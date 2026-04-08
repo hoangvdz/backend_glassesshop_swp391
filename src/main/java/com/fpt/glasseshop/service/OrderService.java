@@ -91,8 +91,9 @@ public class OrderService {
             throw new IllegalArgumentException("Invalid order status: " + targetStatus);
         }
 
-        // Force StockReadyAt if moving from PENDING to something else (approving pre-order)
-        if ("PENDING".equals(order.getStatus()) && ("PROCESSING".equals(targetStatus) || "PREORDER".equals(targetStatus))) {
+        // Force StockReadyAt if moving from PENDING/PREORDER to PROCESSING (approving pre-order)
+        if (("PENDING".equals(order.getStatus()) || "PREORDER".equals(order.getStatus())) && 
+            "PROCESSING".equals(targetStatus)) {
             order.setStockReadyAt(LocalDateTime.now());
         }
 
@@ -200,6 +201,7 @@ public class OrderService {
                 .status("PENDING")
                 .paymentStatus("UNPAID")
                 .depositType(request.getDepositType())
+                .depositPaymentMethod(request.getPaymentMethod())
                 .status(request.getShipmentStatus() != null ? request.getShipmentStatus() : "PENDING")
                 .orderDate(LocalDateTime.now())
                 .orderItems(new ArrayList<>())
@@ -349,6 +351,7 @@ public class OrderService {
                 .paymentMethod(order.getPaymentMethod())
                 .depositAmount(order.getDepositAmount())
                 .depositType(order.getDepositType())
+                .depositPaymentMethod(order.getDepositPaymentMethod())
                 .stockReadyAt(order.getStockReadyAt())
                 .orderItems(order.getOrderItems() != null ? order.getOrderItems().stream()
                         .map(this::mapToItemDTO)
