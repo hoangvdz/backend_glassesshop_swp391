@@ -241,7 +241,7 @@ public class ReturnRequestService {
                 .status(request.getStatus() != null ? request.getStatus().name() : null)
                 .rejectionReason(request.getRejectionReason())
                 .requestType(request.getRequestType() != null ? request.getRequestType().name() : null)
-                .replacementOrderId(request.getReplacementOrderId())
+                .replacementOrderItemId(request.getReplacementOrderItemId())
                 .requestedAt(request.getRequestedAt())
                 .resolvedAt(request.getResolvedAt())
                 .build();
