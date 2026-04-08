@@ -15,4 +15,6 @@ public interface UserAccountRepository extends JpaRepository<UserAccount, Long> 
 
     boolean existsByEmail(String email);
 
+    @org.springframework.data.jpa.repository.Query("SELECT u FROM UserAccount u WHERE UPPER(u.role) = UPPER(:role) OR UPPER(u.role) = UPPER(CONCAT('ROLE_', :role))")
+    java.util.List<UserAccount> findByRoleIgnoreCase(String role);
 }

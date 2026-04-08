@@ -26,6 +26,7 @@ public class ReturnRequestService {
     private final UserAccountRepository userAccountRepository;
     private final OrderItemRepository orderItemRepository;
     private final PrescriptionRepository prescriptionRepo;
+    private final NotificationService notificationService;
 
     private UserAccount getCurrentUser() {
         String email = SecurityContextHolder.getContext().getAuthentication().getName();
@@ -105,6 +106,13 @@ public class ReturnRequestService {
 
         ReturnRequest saved = returnRequestRepo.save(request);
 
+        notificationService.notifyAdmins(
+            "New Return Request", 
+            "A new " + saved.getRequestType() + " request has been submitted for item " + orderItem.getProductName(),
+            "RETURN",
+            saved.getRequestId()
+        );
+
         return mapToDTO(saved);
     }
 
@@ -131,14 +139,19 @@ public class ReturnRequestService {
 
         validatePendingRequest(request);
 
-        request.setStatus(ReturnRequest.ReturnStatus.APPROVED);
-        request.setResolvedAt(LocalDateTime.now());
+        ReturnRequest saved = returnRequestRepo.save(request);
 
-        if (request.getRequestType() == ReturnRequest.RequestType.EXCHANGE) {
-            createReplacementOrderForExchange(request);
-        }
+        // Notify user
+        UserAccount user = request.getOrderItem().getOrder().getUser();
+        notificationService.createNotification(
+            user, 
+            "Return Request Approved", 
+            "Your " + request.getRequestType() + " request for " + request.getOrderItem().getProductName() + " has been approved.",
+            "RETURN",
+            request.getRequestId()
+        );
 
-        return returnRequestRepo.save(request);
+        return saved;
     }
 
     @Transactional
@@ -156,7 +169,19 @@ public class ReturnRequestService {
         request.setRejectionReason(rejectionReason.trim());
         request.setResolvedAt(LocalDateTime.now());
 
-        return returnRequestRepo.save(request);
+        ReturnRequest saved = returnRequestRepo.save(request);
+
+        // Notify user
+        UserAccount user = request.getOrderItem().getOrder().getUser();
+        notificationService.createNotification(
+            user, 
+            "Return Request Rejected", 
+            "Your " + request.getRequestType() + " request for " + request.getOrderItem().getProductName() + " has been rejected. Reason: " + rejectionReason,
+            "RETURN",
+            request.getRequestId()
+        );
+
+        return saved;
     }
 
     @Transactional
@@ -171,7 +196,19 @@ public class ReturnRequestService {
         request.setStatus(ReturnRequest.ReturnStatus.COMPLETED);
         request.setResolvedAt(LocalDateTime.now());
 
-        return returnRequestRepo.save(request);
+        ReturnRequest saved = returnRequestRepo.save(request);
+
+        // Notify user
+        UserAccount user = request.getOrderItem().getOrder().getUser();
+        notificationService.createNotification(
+            user, 
+            "Return Process Completed", 
+            "The " + request.getRequestType() + " process for " + request.getOrderItem().getProductName() + " is now complete.",
+            "RETURN",
+            request.getRequestId()
+        );
+
+        return saved;
     }
 
     public ReturnRequestResponseDTO mapToDTO(ReturnRequest request) {

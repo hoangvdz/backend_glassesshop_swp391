@@ -83,4 +83,6 @@ public interface OrderRepository extends JpaRepository<Order, Long> {
         AND o.status NOT IN ('CANCELLED', 'CANCELED')
     """)
     List<Order> findTimeoutPreOrders(@Param("cutoff") LocalDateTime cutoff);
+
+    List<Order> findAllByOrderByOrderDateDesc();
 }

@@ -61,14 +61,39 @@ public class CartService {
                             "Lens Option not found with id: " + request.getLensOptionId()));
         }
 
-        // Check if item already exists in cart with same variant
+        // Check if item already exists in cart with same variant AND SAME prescription
         Optional<CartItem> existingItemOpt = cart.getItems().stream()
-                .filter(item ->
-                        item.getProductId() != null &&
-                                request.getProductId() != null &&
-                                item.getProductId().equals(request.getProductId()) &&
-                                item.getVariant().getVariantId().equals(variant.getVariantId())
-                )
+                .filter(item -> {
+                    boolean sameProduct = item.getProductId() != null &&
+                                          request.getProductId() != null &&
+                                          item.getProductId().equals(request.getProductId()) &&
+                                          item.getVariant().getVariantId().equals(variant.getVariantId());
+                    if (!sameProduct) return false;
+
+                    // If same product, check if same lens/prescription context
+                    boolean bothPreorder = Boolean.TRUE.equals(item.getIsPreorder()) && Boolean.TRUE.equals(request.getIsPreorder());
+                    if (bothPreorder) return true; // Preorders with same variant can merge
+
+                    // Check Lens Option
+                    boolean sameLensOption = (item.getLensOption() == null && request.getLensOptionId() == null) ||
+                                             (item.getLensOption() != null && request.getLensOptionId() != null && 
+                                              item.getLensOption().getLensOptionId().equals(request.getLensOptionId()));
+                    if (!sameLensOption) return false;
+
+                    // Check Prescription Uniqueness
+                    if (item.getPrescription() == null && request.getPrescriptionId() == null && request.getSphLeft() == null) {
+                        return true; // Both plain
+                    }
+
+                    // If one has prescription and other doesn't, skip
+                    if ((item.getPrescription() == null) != (request.getPrescriptionId() == null && request.getSphLeft() == null && Boolean.FALSE.equals(request.getIsLens()))) {
+                        return false;
+                    }
+
+                    // For now, if either has prescription, treat as separate or implement deep check
+                    // Usually different prescriptions = different cart items
+                    return false; 
+                })
                 .findFirst();
 
         if (existingItemOpt.isPresent()) {

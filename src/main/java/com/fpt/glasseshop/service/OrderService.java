@@ -27,6 +27,7 @@ public class OrderService {
     private final CartRepository cartRepository;
     private final CartService cartService;
     private final com.fpt.glasseshop.repository.ProductVariantRepository productVariantRepository;
+    private final NotificationService notificationService;
 
     public Order saveOrder(Order order) {
         Order savedOrder = orderRepository.save(order);
@@ -50,7 +51,7 @@ public class OrderService {
     }
 
     public List<OrderDTO> getAllOrdersDTO() {
-        return orderRepository.findAll().stream()
+        return orderRepository.findAllByOrderByOrderDateDesc().stream()
                 .map(this::convertToDTO)
                 .collect(Collectors.toList());
     }
@@ -107,6 +108,25 @@ public class OrderService {
         }
 
         order.setStatus(targetStatus);
+
+        notificationService.createNotification(
+            order.getUser(), 
+            "Order Status Updated", 
+            "Your order " + order.getOrderCode() + " is now " + targetStatus,
+            "ORDER",
+            order.getOrderId()
+        );
+
+        // Special notification for pre-order ready
+        if ("PROCESSING".equals(targetStatus) && order.getOrderItems().stream().anyMatch(i -> Boolean.TRUE.equals(i.getIsPreorder()))) {
+             notificationService.createNotification(
+                order.getUser(), 
+                "Pre-order Item Ready", 
+                "Your pre-order items in " + order.getOrderCode() + " are now in stock and being processed.",
+                "ORDER",
+                order.getOrderId()
+            );
+        }
 
         // Check if canceled to restore stock
         if ("CANCELED".equals(targetStatus) || "CANCELLED".equals(targetStatus)) {
@@ -319,6 +339,13 @@ public class OrderService {
 
         // 5. Save Order
         Order savedOrder = orderRepository.save(order);
+
+        notificationService.notifyAdmins(
+            "New Order Received", 
+            "A new order " + savedOrder.getOrderCode() + " has been placed by " + savedOrder.getFullName(),
+            "ORDER",
+            savedOrder.getOrderId()
+        );
 
         // 6. Clear Cart (DEFERRED: only clear on SUCCESSFUL payment/COD)
         // cartService.clearCart(user);
