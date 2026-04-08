@@ -19,4 +19,6 @@ public class CreateOrderRequest {
     private java.math.BigDecimal voucherDiscount;
     private String idempotencyKey;
     private Boolean isPreorder;
+    private String depositType;
+    private String shipmentStatus;
 }

@@ -61,6 +61,10 @@ public class Order {
     private BigDecimal voucherDiscount;
     private BigDecimal finalPrice;
 
+    private BigDecimal depositAmount;
+    private String depositType; // FULL or PARTIAL
+    private LocalDateTime stockReadyAt; // Timestamp when stock became available (preorders)
+
     @Column(unique = true)
     private String idempotencyKey;
 
