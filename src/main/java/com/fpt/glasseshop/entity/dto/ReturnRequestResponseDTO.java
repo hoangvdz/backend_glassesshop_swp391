@@ -39,4 +39,9 @@ public class ReturnRequestResponseDTO {
     // Nếu là kính/lens thì thêm
     private String lensType;
     private String lensCoating;
+
+    private String bankAccountNumber;
+    private String bankName;
+    private String bankAccountHolder;
+    private String refundNote;
 }

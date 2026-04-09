@@ -17,4 +17,8 @@ public class ReturnRequestDTO {
     private String imageUrl;
     private String requestType;
     private Integer returnQuantity;
+    private String bankAccountNumber;
+    private String bankName;
+    private String bankAccountHolder;
+    private Boolean isComboRequest;
 }

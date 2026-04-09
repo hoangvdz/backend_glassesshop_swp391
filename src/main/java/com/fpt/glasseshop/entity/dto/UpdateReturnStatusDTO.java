@@ -7,4 +7,5 @@ import lombok.Data;
 public class UpdateReturnStatusDTO {
     private ReturnRequest.ReturnStatus status;
     private String rejectionReason;
+    private String refundNote;
 }
