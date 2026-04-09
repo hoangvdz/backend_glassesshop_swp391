@@ -105,6 +105,13 @@ public class OrderService {
                 !"COD".equals(order.getPaymentMethod())) {
                 throw new IllegalStateException("Cannot ship pre-order: balance payment is required or must be COD.");
             }
+
+            // Check for unapproved prescriptions
+            boolean hasUnapprovedPrescription = order.getOrderItems().stream()
+                .anyMatch(item -> item.getPrescription() != null && !Boolean.TRUE.equals(item.getPrescription().getStatus()));
+            if (hasUnapprovedPrescription) {
+                throw new IllegalStateException("Cannot ship order: all prescriptions must be approved first.");
+            }
         }
 
         order.setStatus(targetStatus);
@@ -151,12 +158,17 @@ public class OrderService {
     public OrderDTO updatePaymentOrderStatus(Long orderId, String newStatus) {
         Order order = orderRepository.findById(orderId)
                 .orElseThrow(() -> new ResourceNotFoundException("Order not found with id: " + orderId));
-        java.util.List<String> validStatuses = java.util.Arrays.asList("UNPAID", "PAID");
+        java.util.List<String> validStatuses = java.util.Arrays.asList("UNPAID", "PAID", "PAID_FULL");
         if (!validStatuses.contains(newStatus)) {
             throw new IllegalArgumentException("Invalid payment status: " + newStatus);
         }
 
-        order.setPaymentStatus(newStatus);
+        // Logic for Pre-order Balance: if already PAID (deposit), and receiving PAID again -> set to PAID_FULL
+        if ("PAID".equals(order.getPaymentStatus()) && "PAID".equals(newStatus)) {
+            order.setPaymentStatus("PAID_FULL");
+        } else {
+            order.setPaymentStatus(newStatus);
+        }
 
         // Check if canceled to restore stock
         if ("CANCELED".equals(newStatus)) {
