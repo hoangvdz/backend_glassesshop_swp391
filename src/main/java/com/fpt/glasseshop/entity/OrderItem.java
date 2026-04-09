@@ -95,4 +95,5 @@ public class OrderItem {
             return "PRE_ORDER";
         return "IN_STOCK";
     }
+    private String groupId;//ràng buộc combo
 }
