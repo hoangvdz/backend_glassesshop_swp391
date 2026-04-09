@@ -75,10 +75,7 @@ public class ReturnRequestService {
     public ReturnRequestResponseDTO createReturnRequest(ReturnRequestDTO dto) throws BadRequestException {
 
         UserAccount currentUser = getCurrentUser();
-        System.out.println("dto.orderItemId = " + dto.getOrderItemId());
-        System.out.println("dto.orderId = " + dto.getOrderId());
-        System.out.println("dto.isComboRequest = " + dto.getIsComboRequest());
-        // ✅ HANDLE COMBO FIRST
+        // combo
         if (Boolean.TRUE.equals(dto.getIsComboRequest())) {
 
             if (dto.getOrderId() == null) {
@@ -116,7 +113,7 @@ public class ReturnRequestService {
                 );
             }
 
-            // 👉 lấy item đầu tiên làm anchor
+            // lấy item đầu tiên làm anchor
             OrderItem firstItem = order.getOrderItems().get(0);
 
             ReturnRequest request = ReturnRequest.builder()
