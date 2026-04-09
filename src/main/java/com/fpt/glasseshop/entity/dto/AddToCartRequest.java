@@ -47,5 +47,5 @@ public class AddToCartRequest {
     private Integer axisRight;
     private java.math.BigDecimal addLeft;
     private java.math.BigDecimal addRight;
-    private java.math.BigDecimal pd;
+
 }

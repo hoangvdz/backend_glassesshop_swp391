@@ -9,7 +9,6 @@
             "prescription": {
                 "sphLeft": -1.25,
                 "sphRight": -1.5,
-                "pd": 64.5,
                 "doctorName": "Dr. Test"
             }
         }

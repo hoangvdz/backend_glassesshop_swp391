@@ -51,7 +51,6 @@ class OrderSnapshotTest {
                 .quantity(1)
                 .sphLeft(new BigDecimal("-1.50"))
                 .sphRight(new BigDecimal("-1.50"))
-                .pd(new BigDecimal("63.0"))
                 .build();
         cartService.addToCart(customer, addReq);
 

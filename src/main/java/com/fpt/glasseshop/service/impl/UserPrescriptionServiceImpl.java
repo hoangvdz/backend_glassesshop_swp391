@@ -28,15 +28,13 @@ public class UserPrescriptionServiceImpl implements UserPrescriptionService {
 
         boolean exists = list.stream().anyMatch(p ->
                 Objects.equals(p.getSphLeft(), data.getSphLeft()) &&
-                        Objects.equals(p.getSphRight(), data.getSphRight()) &&
-                        Objects.equals(p.getPd(), data.getPd())
+                        Objects.equals(p.getSphRight(), data.getSphRight())
         );
 
         if (exists) {
             return list.stream().filter(p ->
                     Objects.equals(p.getSphLeft(), data.getSphLeft()) &&
-                            Objects.equals(p.getSphRight(), data.getSphRight()) &&
-                            Objects.equals(p.getPd(), data.getPd())
+                            Objects.equals(p.getSphRight(), data.getSphRight())
             ).findFirst().get();
         }
 

@@ -129,7 +129,7 @@ public class CartService {
                 Integer axisR = request.getAxisRight();
                 java.math.BigDecimal addL = request.getAddLeft();
                 java.math.BigDecimal addR = request.getAddRight();
-                java.math.BigDecimal pdVal = request.getPd();
+
 
                 if (request.getPrescriptionId() != null) {
                     com.fpt.glasseshop.entity.Prescription savedP = prescriptionRepository.findById(request.getPrescriptionId())
@@ -142,7 +142,7 @@ public class CartService {
                     axisR = savedP.getAxisRight();
                     addL = savedP.getAddLeft();
                     addR = savedP.getAddRight();
-                    pdVal = savedP.getPd();
+
                 }
 
                 com.fpt.glasseshop.entity.Prescription prescription = com.fpt.glasseshop.entity.Prescription.builder()
@@ -154,7 +154,7 @@ public class CartService {
                         .axisRight(axisR)
                         .addLeft(addL)
                         .addRight(addR)
-                        .pd(pdVal)
+
                         .status(false) // pending approval
                         .cartItem(newItem)
                         .build();
@@ -265,7 +265,7 @@ public class CartService {
                         .axisRight(item.getPrescription() != null ? item.getPrescription().getAxisRight() : null)
                         .addLeft(item.getPrescription() != null ? item.getPrescription().getAddLeft() : null)
                         .addRight(item.getPrescription() != null ? item.getPrescription().getAddRight() : null)
-                        .pd(item.getPrescription() != null ? item.getPrescription().getPd() : null)
+
                         .build();
 
                 itemDTOs.add(itemDTO);

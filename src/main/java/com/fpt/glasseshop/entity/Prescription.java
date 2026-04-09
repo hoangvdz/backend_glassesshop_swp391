@@ -44,7 +44,7 @@ public class Prescription {
     private Integer axisRight;
     private BigDecimal addLeft;
     private BigDecimal addRight;
-    private BigDecimal pd;
+
     private String doctorName;
     private LocalDate expirationDate;
     
