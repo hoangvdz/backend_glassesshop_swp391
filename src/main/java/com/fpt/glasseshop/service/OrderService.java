@@ -250,7 +250,7 @@ public class OrderService {
             }
 
             // Atomic Stock Validation & Deduction (Skip for Preorders)
-            boolean isPreorderItem = Boolean.TRUE.equals(cartItem.getIsPreorder()) || Boolean.TRUE.equals(request.getIsPreorder());
+            boolean isPreorderItem = Boolean.TRUE.equals(cartItem.getIsPreorder());
 
             if (!isPreorderItem) {
                 int updatedRows = productVariantRepository.decreaseStock(cartItem.getVariant().getVariantId(), cartItem.getQuantity());
