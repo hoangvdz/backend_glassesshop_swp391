@@ -109,6 +109,14 @@ public class OrderService {
 
         order.setStatus(targetStatus);
 
+        // Tự động chuyển paymentStatus sang PAID khi đơn hàng hoàn thành hoặc đã giao
+        if ("DELIVERED".equalsIgnoreCase(targetStatus) || "COMPLETED".equalsIgnoreCase(targetStatus)) {
+            order.setPaymentStatus("PAID");
+            if (order.getDeliveredAt() == null) {
+                order.setDeliveredAt(LocalDateTime.now());
+            }
+        }
+
         notificationService.createNotification(
             order.getUser(), 
             "Order Status Updated", 
@@ -136,10 +144,6 @@ public class OrderService {
                 }
             }
         }
-        if (("DELIVERED".equals(targetStatus) || "COMPLETED".equals(targetStatus)) && order.getDeliveredAt() == null) {
-            order.setDeliveredAt(LocalDateTime.now());
-        }
-
         return convertToDTO(orderRepository.save(order));
     }
 
