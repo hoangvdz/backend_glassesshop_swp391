@@ -26,6 +26,7 @@ public class ReturnRequestService {
     private final UserAccountRepository userAccountRepository;
     private final OrderItemRepository orderItemRepository;
     private final PrescriptionRepository prescriptionRepo;
+    private final ProductVariantRepository proVariantRepo;
 
     private UserAccount getCurrentUser() {
         String email = SecurityContextHolder.getContext().getAuthentication().getName();
@@ -186,10 +187,38 @@ public class ReturnRequestService {
         request.setResolvedAt(LocalDateTime.now());
 
         if (request.getRequestType() == ReturnRequest.RequestType.EXCHANGE) {
+            validateAndReserveStockForExchange(request);
             createReplacementOrderForExchange(request);
         }
 
         return returnRequestRepo.save(request);
+    }
+    private void validateAndReserveStockForExchange(ReturnRequest request) {
+        OrderItem orderItem = getRequiredOrderItem(request);
+
+        if (orderItem.getVariantId() == null) {
+            throw new RuntimeException("Variant not found for exchange item");
+        }
+
+        ProductVariant variant = proVariantRepo.findById(orderItem.getVariantId())
+                .orElseThrow(() -> new RuntimeException("Variant not found"));
+
+        Integer requestedQty = request.getReturnQuantity();
+        Integer currentStock = variant.getStockQuantity();
+
+        if (currentStock == null || currentStock <= 0) {
+            throw new RuntimeException("This product is out of stock, cannot process exchange");
+        }
+
+        if (currentStock < requestedQty) {
+            throw new RuntimeException(
+                    "Not enough stock for exchange. Available: " + currentStock
+                            + ", requested: " + requestedQty
+            );
+        }
+
+        variant.setStockQuantity(currentStock - requestedQty);
+        proVariantRepo.save(variant);
     }
 
     @Transactional
@@ -226,6 +255,7 @@ public class ReturnRequestService {
     }
 
     public ReturnRequestResponseDTO mapToDTO(ReturnRequest request) {
+        OrderItem orderItem = request.getOrderItem();
         return ReturnRequestResponseDTO.builder()
                 .requestId(request.getRequestId())
                 .orderId(
@@ -244,6 +274,15 @@ public class ReturnRequestService {
                 .replacementOrderItemId(request.getReplacementOrderItemId())
                 .requestedAt(request.getRequestedAt())
                 .resolvedAt(request.getResolvedAt())
+                // product info
+                .productName(orderItem != null ? orderItem.getProductName() : null)
+                .productImageUrl(orderItem != null ? orderItem.getImageUrl() : null)
+                .variantColor(orderItem != null ? orderItem.getVariantColor() : null)
+                .variantSize(orderItem != null ? orderItem.getVariantSize() : null)
+                .purchasedQuantity(orderItem != null ? orderItem.getQuantity() : null)
+                .unitPrice(orderItem != null ? orderItem.getUnitPrice() : null)
+                .lensType(orderItem != null ? orderItem.getLensType() : null)
+                .lensCoating(orderItem != null ? orderItem.getLensCoating() : null)
                 .build();
     }
 
