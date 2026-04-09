@@ -39,7 +39,7 @@ public class PrescriptionService {
                 .axisRight(dto.getAxisRight())
                 .addLeft(dto.getAddLeft())
                 .addRight(dto.getAddRight())
-                .pd(dto.getPd())
+
                 .doctorName(dto.getDoctorName())
                 .expirationDate(dto.getExpirationDate())
                 .status(true) 
@@ -108,7 +108,7 @@ public class PrescriptionService {
                 .axisRight(p.getAxisRight())
                 .addLeft(p.getAddLeft())
                 .addRight(p.getAddRight())
-                .pd(p.getPd())
+
                 .doctorName(p.getDoctorName())
                 .expirationDate(p.getExpirationDate())
                 .status(p.getStatus())

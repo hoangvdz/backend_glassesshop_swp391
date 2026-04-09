@@ -357,7 +357,7 @@ public class ReturnRequestService {
                 .axisRight(oldItem.getAxisRight())
                 .addLeft(oldItem.getAddLeft())
                 .addRight(oldItem.getAddRight())
-                .pd(oldItem.getPd())
+
 
                 .isPreorder(oldItem.getIsPreorder())
                 .build();
@@ -380,7 +380,7 @@ public class ReturnRequestService {
                         .axisRight(oldPrescription.getAxisRight())
                         .addLeft(oldPrescription.getAddLeft())
                         .addRight(oldPrescription.getAddRight())
-                        .pd(oldPrescription.getPd())
+
                         .doctorName(oldPrescription.getDoctorName())
                         .expirationDate(oldPrescription.getExpirationDate())
                         .status(oldPrescription.getStatus())

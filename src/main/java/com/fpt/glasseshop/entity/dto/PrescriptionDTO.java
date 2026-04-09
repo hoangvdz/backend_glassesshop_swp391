@@ -33,8 +33,7 @@ public class PrescriptionDTO {
     private BigDecimal addLeft;
     private BigDecimal addRight;
 
-    @NotNull(message = "PD (Pupillary Distance) is required")
-    private BigDecimal pd;
+
 
     private String doctorName;
     private LocalDate expirationDate;

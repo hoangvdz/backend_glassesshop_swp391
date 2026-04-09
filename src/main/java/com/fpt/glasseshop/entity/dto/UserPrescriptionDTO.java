@@ -16,10 +16,5 @@ public class UserPrescriptionDTO {
     private Integer axisRight;
     private BigDecimal addLeft;
     private BigDecimal addRight;
-    private BigDecimal pd;
 
-    private BigDecimal prismLeft;
-    private BigDecimal prismRight;
-    private String baseLeft;
-    private String baseRight;
 }

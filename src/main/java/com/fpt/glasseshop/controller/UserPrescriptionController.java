@@ -47,11 +47,7 @@ public class UserPrescriptionController {
                 .axisRight(dto.getAxisRight())
                 .addLeft(dto.getAddLeft())
                 .addRight(dto.getAddRight())
-                .pd(dto.getPd())
-                .prismLeft(dto.getPrismLeft())
-                .prismRight(dto.getPrismRight())
-                .baseLeft(dto.getBaseLeft())
-                .baseRight(dto.getBaseRight())
+
                 .user(user)
                 .build();
 

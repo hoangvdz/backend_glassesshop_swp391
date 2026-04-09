@@ -286,7 +286,7 @@ public class OrderService {
                         .axisRight(cartItem.getPrescription() != null ? cartItem.getPrescription().getAxisRight() : null)
                         .addLeft(cartItem.getPrescription() != null ? cartItem.getPrescription().getAddLeft() : null)
                         .addRight(cartItem.getPrescription() != null ? cartItem.getPrescription().getAddRight() : null)
-                        .pd(cartItem.getPrescription() != null ? cartItem.getPrescription().getPd() : null)
+
                         .build();
 
                 if (cartItem.getPrescription() != null) {
@@ -302,7 +302,7 @@ public class OrderService {
                             .axisRight(cartP.getAxisRight())
                             .addLeft(cartP.getAddLeft())
                             .addRight(cartP.getAddRight())
-                            .pd(cartP.getPd())
+
                             .doctorName(cartP.getDoctorName())
                             .expirationDate(cartP.getExpirationDate())
                             .status(cartP.getStatus() != null ? cartP.getStatus() : false)
@@ -417,7 +417,7 @@ public class OrderService {
                 .axisRight(item.getAxisRight())
                 .addLeft(item.getAddLeft())
                 .addRight(item.getAddRight())
-                .pd(item.getPd())
+
                 .prescription(mapToPrescriptionDTO(item.getPrescription()))
                 .build();
     }
@@ -436,7 +436,7 @@ public class OrderService {
                 .axisRight(p.getAxisRight())
                 .addLeft(p.getAddLeft())
                 .addRight(p.getAddRight())
-                .pd(p.getPd())
+
                 .doctorName(p.getDoctorName())
                 .expirationDate(p.getExpirationDate())
                 .status(p.getStatus())
