@@ -14,8 +14,10 @@ import java.time.LocalDateTime;
 public class NotificationDTO {
     private Long notificationId;
     private Long userId;
-    private String type;
+    private String title;
     private String message;
     private boolean isRead;
+    private String type;
+    private Long referenceId;
     private LocalDateTime createdAt;
 }

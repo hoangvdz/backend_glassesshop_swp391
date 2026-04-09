@@ -8,8 +8,6 @@ import com.fpt.glasseshop.repository.ProductRepository;
 import com.fpt.glasseshop.repository.ProductVariantRepository;
 import com.fpt.glasseshop.repository.OrderItemRepository;
 import lombok.RequiredArgsConstructor;
-import org.springframework.beans.BeanUtils;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.util.List;

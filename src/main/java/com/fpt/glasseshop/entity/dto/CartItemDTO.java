@@ -59,7 +59,7 @@ public class CartItemDTO {
     private Integer axisRight;
     private BigDecimal addLeft;
     private BigDecimal addRight;
-    private BigDecimal pd;
+
 
     @Schema(description = "Prescription details if applicable")
     private PrescriptionDTO prescription;

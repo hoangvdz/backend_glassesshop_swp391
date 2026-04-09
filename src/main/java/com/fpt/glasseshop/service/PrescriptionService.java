@@ -17,6 +17,7 @@ import java.util.stream.Collectors;
 public class PrescriptionService {
 
     private final PrescriptionRepository prescriptionRepository;
+    private final NotificationService notificationService;
 
     @Transactional(readOnly = true)
     public List<PrescriptionDTO> getPrescriptionsByUser(UserAccount user) {
@@ -38,13 +39,22 @@ public class PrescriptionService {
                 .axisRight(dto.getAxisRight())
                 .addLeft(dto.getAddLeft())
                 .addRight(dto.getAddRight())
-                .pd(dto.getPd())
+
                 .doctorName(dto.getDoctorName())
                 .expirationDate(dto.getExpirationDate())
                 .status(true) 
                 .build();
         
-        return convertToDTO(prescriptionRepository.save(prescription));
+        Prescription saved = prescriptionRepository.save(prescription);
+
+        notificationService.notifyAdmins(
+            "New Prescription Uploaded",
+            "Customer " + user.getName() + " has uploaded a new prescription.",
+            "PRESCRIPTION",
+            saved.getPrescriptionId()
+        );
+        
+        return convertToDTO(saved);
     }
 
     @Transactional
@@ -66,6 +76,22 @@ public class PrescriptionService {
         
         p.setStatus(status);
         p.setAdminNote(adminNote);
+
+        UserAccount user = p.getUser();
+        if (user == null && p.getOrderItem() != null && p.getOrderItem().getOrder() != null) {
+            user = p.getOrderItem().getOrder().getUser();
+        }
+
+        String result = Boolean.TRUE.equals(status) ? "Approved" : "Rejected";
+        if (user != null) {
+            notificationService.createNotification(
+                user,
+                "Prescription " + result,
+                "Your prescription " + (p.getName() != null ? p.getName() : "") + " has been " + result.toLowerCase() + ".",
+                "PRESCRIPTION",
+                p.getPrescriptionId()
+            );
+        }
         
         return convertToDTO(prescriptionRepository.save(p));
     }
@@ -82,7 +108,7 @@ public class PrescriptionService {
                 .axisRight(p.getAxisRight())
                 .addLeft(p.getAddLeft())
                 .addRight(p.getAddRight())
-                .pd(p.getPd())
+
                 .doctorName(p.getDoctorName())
                 .expirationDate(p.getExpirationDate())
                 .status(p.getStatus())

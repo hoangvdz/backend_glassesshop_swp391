@@ -8,7 +8,6 @@ import lombok.NoArgsConstructor;
 import org.hibernate.annotations.CreationTimestamp;
 
 import java.math.BigDecimal;
-import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.List;
 
@@ -61,6 +60,11 @@ public class Order {
     private BigDecimal shippingFee;
     private BigDecimal voucherDiscount;
     private BigDecimal finalPrice;
+
+    private BigDecimal depositAmount;
+    private String depositType; // FULL or PARTIAL
+    private String depositPaymentMethod; // Method used for the initial deposit
+    private LocalDateTime stockReadyAt; // Timestamp when stock became available (preorders)
 
     @Column(unique = true)
     private String idempotencyKey;

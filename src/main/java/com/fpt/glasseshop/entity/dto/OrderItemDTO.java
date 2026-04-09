@@ -82,8 +82,7 @@ public class OrderItemDTO {
     private BigDecimal addLeft;
     @Schema(description = "Addition (Right)", example = "1.00")
     private BigDecimal addRight;
-    @Schema(description = "Pupillary Distance", example = "62.00")
-    private BigDecimal pd;
+
 
     @Schema(description = "Prescription details if applicable")
     private PrescriptionDTO prescription;

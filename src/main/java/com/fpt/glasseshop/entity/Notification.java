@@ -27,6 +27,8 @@ public class Notification {
     private String title;
     private String message;
     private boolean isRead;
+    private String type; // ORDER, RETURN, PRESCRIPTION, REVIEW, etc.
+    private Long referenceId;
 
     @CreationTimestamp
     private LocalDateTime createdAt;

@@ -141,7 +141,7 @@ CREATE TABLE prescription (
     cyl_right DECIMAL(5, 2),
     axis_left INT,
     axis_right INT,
-    pd DECIMAL(5, 2),
+
     doctor_name NVARCHAR(255),
     expiration_date DATE,
     status VARCHAR(50),

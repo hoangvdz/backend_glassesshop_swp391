@@ -31,4 +31,6 @@ public interface ProductVariantService {
 
     //Delete variant
     void deleteProductVariant(Long productVariantId);
+
+    ProductVariantDTO updateQuantityProductVariant(Long variantId, Integer quantity) throws BadRequestException;
 }

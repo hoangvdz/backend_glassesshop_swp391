@@ -35,7 +35,15 @@ public class ReturnRequest {
     private LocalDateTime resolvedAt;
 
     public enum ReturnStatus {
-        PENDING, APPROVED, REJECTED, COMPLETED
+        PENDING,                    // chờ duyệt
+        APPROVED,                  // duyệt yêu cầu
+        WAITING_CUSTOMER_RETURN,   // chờ khách gửi hàng về
+        RECEIVED_RETURN,           // shop đã nhận hàng trả
+        REFUND_INFO_INVALID,       // thông tin ngân hàng sai
+        REFUND_PENDING,            // chờ hoàn tiền
+        REFUNDED,                  // đã hoàn tiền
+        REJECTED,                  // từ chối
+        COMPLETED
     }
 
     @Column(name = "description", columnDefinition = "NVARCHAR(MAX)")
@@ -55,8 +63,26 @@ public class ReturnRequest {
     @Column(name = "replacement_order_id")
     private Long replacementOrderId;
 
+    @Column(name = "replacement_order_item_id")
+    private Long replacementOrderItemId;
+
+    @Column(nullable = false)
+    private Integer returnQuantity;
+
     public enum RequestType {
         RETURN, EXCHANGE
     }
+    @Column(name = "bank_account_number", columnDefinition = "NVARCHAR(50)")
+    private String bankAccountNumber;
+
+    @Column(name = "bank_name", columnDefinition = "NVARCHAR(100)")
+    private String bankName;
+
+    @Column(name = "bank_account_holder", columnDefinition = "NVARCHAR(100)")
+    private String bankAccountHolder;
+
+    @Column(name = "refund_note", columnDefinition = "NVARCHAR(MAX)")
+    private String refundNote;
+
 
 }

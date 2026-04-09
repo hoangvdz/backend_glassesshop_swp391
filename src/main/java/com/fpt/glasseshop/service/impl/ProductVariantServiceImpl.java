@@ -76,16 +76,16 @@ public class ProductVariantServiceImpl implements ProductVariantService {
     @Override
     public ProductVariantDTO updateProductVariant(VariantRequest productVariant, Long productVariantId) {
         ProductVariant proVariantExists = getProductVariantById(productVariantId);
-        if(proVariantExists != null){
+        if (proVariantExists != null) {
             proVariantExists.setColor(productVariant.getColor().trim());
             proVariantExists.setFrameSize(productVariant.getFrameSize().trim());
             proVariantExists.setStatus(productVariant.getStatus());
             proVariantExists.setMaterial(productVariant.getMaterial().trim());
             proVariantExists.setStockQuantity(productVariant.getStockQuantity());
             proVariantExists.setImageUrl(productVariant.getImageUrl());
-        }
-        if (productVariant.getActive() != null) {
-            proVariantExists.setActive(productVariant.getActive());
+            if (productVariant.getActive() != null) {
+                proVariantExists.setActive(productVariant.getActive());
+            }
         }
         ProductVariant saved = productVariantRepo.save(proVariantExists);
         return mapToDTO(saved);
@@ -132,6 +132,22 @@ public class ProductVariantServiceImpl implements ProductVariantService {
         variant.setActive(false);
         productVariantRepo.save(variant);
     }
+
+    @Override
+    public ProductVariantDTO updateQuantityProductVariant(Long variantId, Integer quantity) throws BadRequestException {
+        ProductVariant variant = productVariantRepo.findById(variantId)
+                .orElseThrow(() -> new BadRequestException("Variant not found"));
+
+        if (quantity < 0) {
+            throw new BadRequestException("Quantity must be greater than or equal to 0");
+        }
+
+        variant.setStockQuantity(quantity);
+        ProductVariant savedVariant = productVariantRepo.save(variant);
+
+        return mapToDTO(savedVariant);
+    }
+
     private ProductVariantDTO mapToDTO(ProductVariant variant) {
         return ProductVariantDTO.builder()
                 .variantId(variant.getVariantId())

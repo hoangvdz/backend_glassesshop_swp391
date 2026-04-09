@@ -22,6 +22,7 @@ public class ReviewService {
     private final ReviewRepository reviewRepository;
     private final ProductRepository productRepository;
     private final OrderRepository orderRepository;
+    private final NotificationService notificationService;
 
     @Transactional
     public ReviewDTO createReview(UserAccount user, CreateReviewRequest request) {
@@ -67,7 +68,17 @@ public class ReviewService {
                 .createdAt(LocalDateTime.now())
                 .build();
 
-        return convertToDTO(reviewRepository.save(review));
+        Review saved = reviewRepository.save(review);
+
+        // Notify admins
+        notificationService.notifyAdmins(
+            "New Product Review", 
+            user.getName() + " gave " + request.getRating() + " stars to " + product.getName(),
+            "PRODUCT",
+            product.getProductId()
+        );
+
+        return convertToDTO(saved);
     }
 
     public List<ReviewDTO> getReviewsByProduct(Long productId) {

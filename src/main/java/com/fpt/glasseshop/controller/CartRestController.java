@@ -64,4 +64,11 @@ public class CartRestController {
         UserAccount user = getCurrentUser();
         return ResponseEntity.ok(cartService.removeCartItem(user, cartItemId));
     }
+
+    @DeleteMapping("/clear")
+    public ResponseEntity<Void> clearCart() {
+        UserAccount user = getCurrentUser();
+        cartService.clearCart(user);
+        return ResponseEntity.ok().build();
+    }
 }

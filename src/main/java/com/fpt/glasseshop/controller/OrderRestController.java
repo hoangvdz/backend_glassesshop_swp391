@@ -145,6 +145,20 @@ public class OrderRestController {
                     .body(ApiResponse.error(e.getMessage()));
         }
     }
+
+    @PatchMapping("/{id}/paymentMethod")
+    public ResponseEntity<ApiResponse<OrderDTO>> updatePaymentMethod(
+            @PathVariable Long id,
+            @RequestParam String method) {
+        try {
+            OrderDTO updatedOrder = orderService.updatePaymentMethod(id, method);
+            return ResponseEntity.ok(ApiResponse.success("Payment method updated", updatedOrder));
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body(ApiResponse.error(e.getMessage()));
+        }
+    }
+
     @GetMapping("/customers/count")
     public ResponseEntity<ApiResponse<Long>> getTotalCustomers() {
         return ResponseEntity.ok(ApiResponse.success(
